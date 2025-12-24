@@ -3,78 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خزنة النجم الذكية</title>
+    <title>نظام النجم - متعدد العملات</title>
     <style>
-        body { background-color: #0d0d0d; color: #d4af37; font-family: sans-serif; text-align: center; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .vault-card { width: 100%; max-width: 450px; background: #1a1a1a; border: 2px solid #d4af37; border-radius: 20px; padding: 25px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.2); }
-        #loginSection { display: block; }
-        #mainContent { display: none; }
-        .balance { font-size: 45px; color: #fff; margin: 15px 0; text-shadow: 0 0 10px #fff; }
-        input { width: 85%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #d4af37; background: #000; color: #fff; text-align: center; font-size: 16px; }
-        button { width: 90%; padding: 15px; background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; margin-top: 15px; }
-        .item { background: #262626; margin: 8px 0; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; border-right: 4px solid #d4af37; }
-        h1 { margin-bottom: 20px; }
+        body { background-color: #0d0d0d; color: #d4af37; font-family: sans-serif; text-align: center; padding: 10px; margin: 0; }
+        .vault-card { width: 95%; max-width: 500px; background: #1a1a1a; border: 2px solid #d4af37; border-radius: 20px; padding: 20px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.2); margin: auto; }
+        #contractSection, #mainContent { display: none; }
+        .contract-text { background: #000; color: #ccc; padding: 10px; border-radius: 10px; text-align: right; font-size: 13px; height: 150px; overflow-y: scroll; border: 1px solid #333; }
+        .balance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .bal-box { background: #000; padding: 10px; border-radius: 10px; border: 1px solid #444; }
+        .bal-val { font-size: 18px; color: #fff; font-weight: bold; }
+        .bal-label { font-size: 11px; color: #d4af37; }
+        input, select { width: 85%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #d4af37; background: #000; color: #fff; text-align: center; }
+        button { width: 90%; padding: 15px; background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; }
+        .item { background: #262626; margin: 5px 0; padding: 10px; border-radius: 10px; display: flex; justify-content: space-between; border-right: 4px solid #d4af37; font-size: 14px; }
     </style>
 </head>
 <body>
     <div id="loginSection" class="vault-card">
-        <h1>🔒 خزنة النجم</h1>
-        <p>أدخل كلمة السر لفتح النظام</p>
+        <h1>🔒 دخول الوكيل</h1>
         <input type="password" id="passInput" placeholder="كلمة السر">
-        <button onclick="checkPass()">فتح الخزنة ✨</button>
+        <button onclick="checkPass()">دخول</button>
+    </div>
+
+    <div id="contractSection" class="vault-card">
+        <h1>📜 الاتفاقية</h1>
+        <div class="contract-text">
+            <p>أوافق على الالتزام بشروط شبكة النجم للتحويلات المالية...</p>
+        </div>
+        <button onclick="agreeToContract()">أوافق ✅</button>
     </div>
 
     <div id="mainContent" class="vault-card">
-        <h1>🌟 نظام النجم 🌟</h1>
-        <div style="color: #888;">إجمالي الرصيد المحفوظ</div>
-        <div class="balance" id="totalBalance">0$</div>
+        <h1>🌟 خزنة النجم 🌟</h1>
         
-        <input type="text" id="itemName" placeholder="اسم المستلم">
-        <input type="number" id="itemAmount" placeholder="المبلغ ($)">
-        <button onclick="addData()">حفظ دائم 🔒</button>
-
-        <div style="margin-top: 30px; text-align: right;">
-            <h3>سجل العمليات الأخير:</h3>
-            <div id="list"></div>
+        <div class="balance-grid">
+            <div class="bal-box"><div class="bal-val" id="bal_USD">0</div><div class="bal-label">دولار</div></div>
+            <div class="bal-box"><div class="bal-val" id="bal_SAR">0</div><div class="bal-label">سعودي</div></div>
+            <div class="bal-box"><div class="bal-val" id="bal_YER">0</div><div class="bal-label">يمني</div></div>
         </div>
-        <button onclick="location.reload()" style="background: #333; color: #fff; margin-top: 20px; font-size: 12px; padding: 5px;">خروج وتسجيل قفل</button>
+
+        <input type="text" id="itemName" placeholder="اسم العميل">
+        <input type="number" id="itemAmount" placeholder="المبلغ">
+        <select id="itemCurrency">
+            <option value="USD">دولار ($)</option>
+            <option value="SAR">ريال سعودي (SR)</option>
+            <option value="YER">ريال يمني (YR)</option>
+        </select>
+        <button onclick="addData()">إرسال حوالة 🔒</button>
+
+        <div id="list" style="margin-top:20px; text-align:right;"></div>
     </div>
 
     <script>
-        // كلمة السر الخاصة بك (يمكنك تغييرها من هنا)
-        const MY_PASS = "1234"; 
-
+        const MY_PASS = "1234";
         function checkPass() {
-            const input = document.getElementById('passInput').value;
-            if(input === MY_PASS) {
+            if(document.getElementById('passInput').value === MY_PASS) {
                 document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-                loadData();
-            } else {
-                alert('كلمة السر خاطئة يا نجم!');
-            }
+                document.getElementById('contractSection').style.display = 'block';
+            } else { alert('خطأ!'); }
+        }
+        function agreeToContract() {
+            document.getElementById('contractSection').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            loadData();
         }
 
         async function loadData() {
             const res = await fetch('/data');
             const data = await res.json();
             const list = document.getElementById('list');
-            let total = 0; list.innerHTML = '';
+            let totals = { USD: 0, SAR: 0, YER: 0 };
+            list.innerHTML = '';
+            
             data.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'item';
-                div.innerHTML = `<span>${item.name}</span> <span>${item.amount}$ ✅</span>`;
+                div.innerHTML = `<span>${item.name}</span> <span>${item.amount} ${item.currency} ✅</span>`;
                 list.appendChild(div);
-                total += parseFloat(item.amount || 0);
+                if(totals[item.currency] !== undefined) totals[item.currency] += parseFloat(item.amount);
             });
-            document.getElementById('totalBalance').textContent = total + "$";
+
+            document.getElementById('bal_USD').textContent = totals.USD;
+            document.getElementById('bal_SAR').textContent = totals.SAR;
+            document.getElementById('bal_YER').textContent = totals.YER;
         }
 
         async function addData() {
             const name = document.getElementById('itemName').value;
             const amount = document.getElementById('itemAmount').value;
-            if(!name || !amount) return alert('أكمل البيانات');
-            await fetch('/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, amount }) });
+            const currency = document.getElementById('itemCurrency').value;
+            if(!name || !amount) return;
+            await fetch('/add', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ name, amount, currency }) 
+            });
             document.getElementById('itemName').value = ''; document.getElementById('itemAmount').value = '';
             loadData();
         }
