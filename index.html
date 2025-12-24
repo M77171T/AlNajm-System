@@ -1,64 +1,38 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خزنة النجم الذكية</title>
-    <style>
-        body { background-color: #0b0d11; color: #d4af37; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; }
-        .vault-card { max-width: 500px; margin: auto; background: linear-gradient(145deg, #161b22, #0d1117); border: 2px solid #d4af37; border-radius: 20px; padding: 30px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
-        h1 { font-size: 28px; text-shadow: 2px 2px 5px #000; }
-        .balance-box { font-size: 40px; font-weight: bold; color: #fff; margin: 20px 0; border-bottom: 1px solid #d4af37; padding-bottom: 10px; }
-        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #d4af37; background: #000; color: #fff; text-align: center; }
-        button { width: 90%; padding: 15px; background: #d4af37; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        button:hover { background: #fff; box-shadow: 0 0 15px #d4af37; }
-        .list-container { margin-top: 20px; text-align: right; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; }
-        li { list-style: none; border-bottom: 1px solid #333; padding: 10px; color: #ccc; }
-    </style>
+<meta charset="UTF-8">
+<style>
+body { background: #000; color: #d4af37; text-align: center; font-family: sans-serif; }
+.card { border: 2px solid #d4af37; padding: 20px; border-radius: 15px; margin: 20px auto; max-width: 400px; }
+input { background: #111; color: #fff; border: 1px solid #d4af37; padding: 10px; width: 80%; margin: 5px; }
+button { background: #d4af37; color: #000; font-weight: bold; padding: 10px; width: 85%; border: none; }
+</style>
 </head>
 <body>
-    <div class="vault-card">
-        <h1>🌟 خزنة النجم الذكية 🌟</h1>
-        <div class="balance-box" id="totalBalance">جاري التحميل...</div>
-        <input type="text" id="itemName" placeholder="اسم المستلم أو العملية">
-        <input type="number" id="itemAmount" placeholder="المبلغ ($)">
-        <button onclick="addData()">إرسال وحفظ في الخزنة 🔒</button>
-        <div class="list-container">
-            <h3>سجل العمليات الأخير:</h3>
-            <ul id="list"></ul>
-        </div>
-    </div>
-
-    <script>
-        async function loadData() {
-            const res = await fetch('/data');
-            const data = await res.json();
-            const list = document.getElementById('list');
-            let total = 0;
-            list.innerHTML = '';
-            data.forEach(item => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${item.name}</span> - <span style="color:#d4af37">${item.amount}$</span> ✅`;
-                list.appendChild(li);
-                total += parseFloat(item.amount || 0);
-            });
-            document.getElementById('totalBalance').textContent = total + " $";
-        }
-
-        async function addData() {
-            const name = document.getElementById('itemName').value;
-            const amount = document.getElementById('itemAmount').value;
-            if(!name || !amount) return alert('يرجى إكمال البيانات');
-            await fetch('/add', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, amount })
-            });
-            document.getElementById('itemName').value = '';
-            document.getElementById('itemAmount').value = '';
-            loadData();
-        }
-        loadData();
-    </script>
+<div class="card">
+<h1>🔒 نظام النجم الذهبي</h1>
+<div id="total" style="font-size: 35px; color: #fff;">0$</div>
+<input id="n" placeholder="الاسم"><input id="a" type="number" placeholder="المبلغ">
+<button onclick="add()">حفظ في الخزنة</button>
+<div id="l" style="text-align: right; margin-top: 15px;"></div>
+</div>
+<script>
+async function load() {
+const r = await fetch('/data'); const d = await r.json();
+let t = 0; document.getElementById('l').innerHTML = '';
+d.forEach(i => {
+t += parseFloat(i.amount);
+document.getElementById('l').innerHTML += `<div>${i.name}: ${i.amount}$ ✅</div>`;
+});
+document.getElementById('total').innerText = t + '$';
+}
+async function add() {
+const n = document.getElementById('n').value; const a = document.getElementById('a').value;
+await fetch('/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: n, amount: a }) });
+load();
+}
+load();
+</script>
 </body>
 </html>
