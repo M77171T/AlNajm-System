@@ -1,38 +1,83 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<style>
-body { background: #000; color: #d4af37; text-align: center; font-family: sans-serif; }
-.card { border: 2px solid #d4af37; padding: 20px; border-radius: 15px; margin: 20px auto; max-width: 400px; }
-input { background: #111; color: #fff; border: 1px solid #d4af37; padding: 10px; width: 80%; margin: 5px; }
-button { background: #d4af37; color: #000; font-weight: bold; padding: 10px; width: 85%; border: none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خزنة النجم الذكية</title>
+    <style>
+        body { background-color: #0d0d0d; color: #d4af37; font-family: sans-serif; text-align: center; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .vault-card { width: 100%; max-width: 450px; background: #1a1a1a; border: 2px solid #d4af37; border-radius: 20px; padding: 25px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.2); }
+        #loginSection { display: block; }
+        #mainContent { display: none; }
+        .balance { font-size: 45px; color: #fff; margin: 15px 0; text-shadow: 0 0 10px #fff; }
+        input { width: 85%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #d4af37; background: #000; color: #fff; text-align: center; font-size: 16px; }
+        button { width: 90%; padding: 15px; background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; margin-top: 15px; }
+        .item { background: #262626; margin: 8px 0; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; border-right: 4px solid #d4af37; }
+        h1 { margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-<div class="card">
-<h1>🔒 نظام النجم الذهبي</h1>
-<div id="total" style="font-size: 35px; color: #fff;">0$</div>
-<input id="n" placeholder="الاسم"><input id="a" type="number" placeholder="المبلغ">
-<button onclick="add()">حفظ في الخزنة</button>
-<div id="l" style="text-align: right; margin-top: 15px;"></div>
-</div>
-<script>
-async function load() {
-const r = await fetch('/data'); const d = await r.json();
-let t = 0; document.getElementById('l').innerHTML = '';
-d.forEach(i => {
-t += parseFloat(i.amount);
-document.getElementById('l').innerHTML += `<div>${i.name}: ${i.amount}$ ✅</div>`;
-});
-document.getElementById('total').innerText = t + '$';
-}
-async function add() {
-const n = document.getElementById('n').value; const a = document.getElementById('a').value;
-await fetch('/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: n, amount: a }) });
-load();
-}
-load();
-</script>
+    <div id="loginSection" class="vault-card">
+        <h1>🔒 خزنة النجم</h1>
+        <p>أدخل كلمة السر لفتح النظام</p>
+        <input type="password" id="passInput" placeholder="كلمة السر">
+        <button onclick="checkPass()">فتح الخزنة ✨</button>
+    </div>
+
+    <div id="mainContent" class="vault-card">
+        <h1>🌟 نظام النجم 🌟</h1>
+        <div style="color: #888;">إجمالي الرصيد المحفوظ</div>
+        <div class="balance" id="totalBalance">0$</div>
+        
+        <input type="text" id="itemName" placeholder="اسم المستلم">
+        <input type="number" id="itemAmount" placeholder="المبلغ ($)">
+        <button onclick="addData()">حفظ دائم 🔒</button>
+
+        <div style="margin-top: 30px; text-align: right;">
+            <h3>سجل العمليات الأخير:</h3>
+            <div id="list"></div>
+        </div>
+        <button onclick="location.reload()" style="background: #333; color: #fff; margin-top: 20px; font-size: 12px; padding: 5px;">خروج وتسجيل قفل</button>
+    </div>
+
+    <script>
+        // كلمة السر الخاصة بك (يمكنك تغييرها من هنا)
+        const MY_PASS = "1234"; 
+
+        function checkPass() {
+            const input = document.getElementById('passInput').value;
+            if(input === MY_PASS) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                loadData();
+            } else {
+                alert('كلمة السر خاطئة يا نجم!');
+            }
+        }
+
+        async function loadData() {
+            const res = await fetch('/data');
+            const data = await res.json();
+            const list = document.getElementById('list');
+            let total = 0; list.innerHTML = '';
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `<span>${item.name}</span> <span>${item.amount}$ ✅</span>`;
+                list.appendChild(div);
+                total += parseFloat(item.amount || 0);
+            });
+            document.getElementById('totalBalance').textContent = total + "$";
+        }
+
+        async function addData() {
+            const name = document.getElementById('itemName').value;
+            const amount = document.getElementById('itemAmount').value;
+            if(!name || !amount) return alert('أكمل البيانات');
+            await fetch('/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, amount }) });
+            document.getElementById('itemName').value = ''; document.getElementById('itemAmount').value = '';
+            loadData();
+        }
+    </script>
 </body>
 </html>
