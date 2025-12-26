@@ -1,7 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const crypto = require('crypto');
+const path = require('path');
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(express.json());
 app.use(express.static('.'));
 
@@ -11,14 +14,15 @@ function generateHash(data) {
 
 app.get('/data', (req, res) => {
     try {
-        const data = JSON.parse(fs.readFileSync('data.json', 'utf8') || '[]');
-        res.json(data);
+        if (!fs.existsSync('data.json')) fs.writeFileSync('data.json', '[]');
+        const data = fs.readFileSync('data.json', 'utf8');
+        res.json(JSON.parse(data || '[]'));
     } catch (e) { res.json([]); }
 });
 
 app.post('/add', (req, res) => {
     try {
-        const data = JSON.parse(fs.readFileSync('data.json', 'utf8') || '[]');
+        let data = JSON.parse(fs.readFileSync('data.json', 'utf8') || '[]');
         const newEntry = {
             id: Date.now(),
             name: req.body.name,
@@ -31,10 +35,9 @@ app.post('/add', (req, res) => {
         data.push(newEntry);
         fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
         res.json({ success: true });
-    } catch (e) { res.status(500).send(e.message); }
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.listen(3000, () => {
-    console.log('✅ تم استعادة نظام النجم (عملات + اتفاقية + تشفير)');
-    console.log('🔗 الرابط: http://localhost:3000');
+app.listen(PORT, () => {
+    console.log('🚀 النظام جاهز للرفع على المنفذ: ' + PORT);
 });
