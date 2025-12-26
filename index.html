@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام النجم - متعدد العملات</title>
+    <title>نظام النجم الاحترافي</title>
     <style>
         body { background-color: #0d0d0d; color: #d4af37; font-family: sans-serif; text-align: center; padding: 10px; margin: 0; }
         .vault-card { width: 95%; max-width: 500px; background: #1a1a1a; border: 2px solid #d4af37; border-radius: 20px; padding: 20px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.2); margin: auto; }
-        #contractSection, #mainContent { display: none; }
-        .contract-text { background: #000; color: #ccc; padding: 10px; border-radius: 10px; text-align: right; font-size: 13px; height: 150px; overflow-y: scroll; border: 1px solid #333; }
+        #contractSection, #mainContent, #adminSection { display: none; }
         .balance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .bal-box { background: #000; padding: 10px; border-radius: 10px; border: 1px solid #444; }
-        .bal-val { font-size: 18px; color: #fff; font-weight: bold; }
-        .bal-label { font-size: 11px; color: #d4af37; }
-        input, select { width: 85%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #d4af37; background: #000; color: #fff; text-align: center; }
-        button { width: 90%; padding: 15px; background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; }
-        .item { background: #262626; margin: 5px 0; padding: 10px; border-radius: 10px; display: flex; justify-content: space-between; border-right: 4px solid #d4af37; font-size: 14px; }
+        .bal-box { background: #000; padding: 10px; border-radius: 10px; border: 1px solid #444; color: #fff; }
+        input, select { width: 85%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #d4af37; background: #000; color: #fff; text-align: center; font-size: 16px; }
+        button { width: 90%; padding: 15px; background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; margin-top:10px; }
+        .item-row { background: #262626; margin: 10px 0; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #d4af37; }
+        .print-btn { background: #d4af37; color: #000; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .admin-link { color: #555; font-size: 12px; margin-top: 30px; cursor: pointer; display: block; text-decoration: underline; }
+        @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; left: 0; top: 0; width: 100%; color: #000; background: #fff; padding: 30px; text-align: center; border: 2px solid #000; } }
     </style>
 </head>
 <body>
+
     <div id="loginSection" class="vault-card">
         <h1>🔒 دخول الوكيل</h1>
         <input type="password" id="passInput" placeholder="كلمة السر">
@@ -26,48 +27,54 @@
     </div>
 
     <div id="contractSection" class="vault-card">
-        <h1>📜 الاتفاقية</h1>
-        <div class="contract-text">
-            <p>أوافق على الالتزام بشروط شبكة النجم للتحويلات المالية...</p>
-        </div>
+        <h1>📜 اتفاقية الشبكة</h1>
+        <p style="font-size: 14px;">التزاماً بمعايير الحوالات، أوافق على شروط العمل.</p>
         <button onclick="agreeToContract()">أوافق ✅</button>
     </div>
 
     <div id="mainContent" class="vault-card">
         <h1>🌟 خزنة النجم 🌟</h1>
-        
         <div class="balance-grid">
-            <div class="bal-box"><div class="bal-val" id="bal_USD">0</div><div class="bal-label">دولار</div></div>
-            <div class="bal-box"><div class="bal-val" id="bal_SAR">0</div><div class="bal-label">سعودي</div></div>
-            <div class="bal-box"><div class="bal-val" id="bal_YER">0</div><div class="bal-label">يمني</div></div>
+            <div class="bal-box"><div id="bal_USD" style="font-weight:bold;">0</div><small>دولار</small></div>
+            <div class="bal-box"><div id="bal_SAR" style="font-weight:bold;">0</div><small>سعودي</small></div>
+            <div class="bal-box"><div id="bal_YER" style="font-weight:bold;">0</div><small>يمني</small></div>
         </div>
-
+        <hr border="1" color="#333">
         <input type="text" id="itemName" placeholder="اسم العميل">
         <input type="number" id="itemAmount" placeholder="المبلغ">
         <select id="itemCurrency">
             <option value="USD">دولار ($)</option>
-            <option value="SAR">ريال سعودي (SR)</option>
-            <option value="YER">ريال يمني (YR)</option>
+            <option value="SAR">سعودي (SR)</option>
+            <option value="YER">يمني (YR)</option>
         </select>
-        <button onclick="addData()">إرسال حوالة 🔒</button>
+        <button onclick="addData()">حفظ في الخزنة 🔒</button>
+        
+        <div id="list" style="margin-top:20px;"></div>
+        
+        <span class="admin-link" onclick="showAdmin()">📊 لوحة الإدارة (سري)</span>
+    </div>
 
-        <div id="list" style="margin-top:20px; text-align:right;"></div>
+    <div id="adminSection" class="vault-card">
+        <h2>📊 تقرير السيولة الكلي</h2>
+        <div id="adminStats" style="text-align:right; font-size:16px; line-height:2; background:#000; padding:15px; border-radius:10px;"></div>
+        <button onclick="hideAdmin()" style="background:#555; color:#fff;">إغلاق</button>
+    </div>
+
+    <div id="printArea" style="display:none;">
+        <h1 style="border-bottom: 2px solid #000;">سند إرسال حوالة</h1>
+        <p><strong>اسم العميل:</strong> <span id="p_name"></span></p>
+        <p><strong>المبلغ:</strong> <span id="p_amount"></span> <span id="p_curr"></span></p>
+        <p><strong>التاريخ:</strong> <span id="p_date"></span></p>
+        <p style="margin-top: 50px; font-size: 10px;">رمز التوثيق الرقمي: <br><span id="p_hash"></span></p>
+        <p>----------------------------</p>
+        <p>توقيع المستلم</p>
     </div>
 
     <script>
-        const MY_PASS = "1234";
-        function checkPass() {
-            if(document.getElementById('passInput').value === MY_PASS) {
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('contractSection').style.display = 'block';
-            } else { alert('خطأ!'); }
-        }
-        function agreeToContract() {
-            document.getElementById('contractSection').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-            loadData();
-        }
-
+        const PASS = "1234";
+        function checkPass() { if(document.getElementById('passInput').value === PASS) { document.getElementById('loginSection').style.display='none'; document.getElementById('contractSection').style.display='block'; } else alert('كلمة السر خطأ'); }
+        function agreeToContract() { document.getElementById('contractSection').style.display='none'; document.getElementById('mainContent').style.display='block'; loadData(); }
+        
         async function loadData() {
             const res = await fetch('/data');
             const data = await res.json();
@@ -75,31 +82,54 @@
             let totals = { USD: 0, SAR: 0, YER: 0 };
             list.innerHTML = '';
             
-            data.forEach(item => {
+            data.reverse().forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'item';
-                div.innerHTML = `<span>${item.name}</span> <span>${item.amount} ${item.currency} ✅</span>`;
+                div.className = 'item-row';
+                div.innerHTML = `
+                    <div style="text-align:right;">
+                        <strong>${item.name}</strong><br>
+                        <small>${item.amount} ${item.currency}</small>
+                    </div>
+                    <button class="print-btn" onclick='printDoc(${JSON.stringify(item)})'>📄 سند</button>
+                `;
                 list.appendChild(div);
                 if(totals[item.currency] !== undefined) totals[item.currency] += parseFloat(item.amount);
             });
-
-            document.getElementById('bal_USD').textContent = totals.USD;
-            document.getElementById('bal_SAR').textContent = totals.SAR;
-            document.getElementById('bal_YER').textContent = totals.YER;
+            
+            document.getElementById('bal_USD').innerText = totals.USD;
+            document.getElementById('bal_SAR').innerText = totals.SAR;
+            document.getElementById('bal_YER').innerText = totals.YER;
+            
+            document.getElementById('adminStats').innerHTML = `
+                💰 إجمالي دولار: ${totals.USD}<br>
+                💰 إجمالي سعودي: ${totals.SAR}<br>
+                💰 إجمالي يمني: ${totals.YER}<br>
+                📉 عدد الحوالات: ${data.length}
+            `;
         }
 
         async function addData() {
             const name = document.getElementById('itemName').value;
             const amount = document.getElementById('itemAmount').value;
             const currency = document.getElementById('itemCurrency').value;
-            if(!name || !amount) return;
-            await fetch('/add', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ name, amount, currency }) 
-            });
-            document.getElementById('itemName').value = ''; document.getElementById('itemAmount').value = '';
+            if(!name || !amount) { alert('أدخل البيانات كاملة'); return; }
+            await fetch('/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, amount, currency }) });
+            document.getElementById('itemName').value=''; document.getElementById('itemAmount').value='';
             loadData();
+        }
+
+        function showAdmin() { document.getElementById('mainContent').style.display='none'; document.getElementById('adminSection').style.display='block'; }
+        function hideAdmin() { document.getElementById('adminSection').style.display='none'; document.getElementById('mainContent').style.display='block'; }
+        
+        function printDoc(item) {
+            document.getElementById('p_name').innerText = item.name;
+            document.getElementById('p_amount').innerText = item.amount;
+            document.getElementById('p_curr').innerText = item.currency;
+            document.getElementById('p_date').innerText = item.time;
+            document.getElementById('p_hash').innerText = item.hash;
+            document.getElementById('printArea').style.display='block';
+            window.print();
+            document.getElementById('printArea').style.display='none';
         }
     </script>
 </body>

@@ -1,31 +1,40 @@
 const express = require('express');
 const fs = require('fs');
-const path = require('path');
+const crypto = require('crypto');
 const app = express();
-const PORT = 3000;
-
 app.use(express.json());
+app.use(express.static('.'));
 
-// تشغيل الواجهة الرسومية
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+function generateHash(data) {
+    return crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
+}
 
-// جلب البيانات من الملف
 app.get('/data', (req, res) => {
-    const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-    res.json(data);
+    try {
+        const data = JSON.parse(fs.readFileSync('data.json', 'utf8') || '[]');
+        res.json(data);
+    } catch (e) { res.json([]); }
 });
 
-// إضافة بيانات جديدة
 app.post('/add', (req, res) => {
-    const newData = req.body;
-    const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-    data.push(newData);
-    fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
-    res.json({ success: true });
+    try {
+        const data = JSON.parse(fs.readFileSync('data.json', 'utf8') || '[]');
+        const newEntry = {
+            id: Date.now(),
+            name: req.body.name,
+            amount: req.body.amount,
+            currency: req.body.currency,
+            time: new Date().toLocaleString('ar-YE'),
+            hash: ""
+        };
+        newEntry.hash = generateHash(newEntry);
+        data.push(newEntry);
+        fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
+        res.json({ success: true });
+    } catch (e) { res.status(500).send(e.message); }
 });
 
-app.listen(PORT, () => {
-    console.log(`✅ نظام النجم يعمل الآن على: http://localhost:${PORT}`);
+app.listen(3000, () => {
+    console.log('✅ تم استعادة نظام النجم (عملات + اتفاقية + تشفير)');
+    console.log('🔗 الرابط: http://localhost:3000');
 });
