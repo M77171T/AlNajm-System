@@ -3,60 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام النجم | XRP</title>
+    <title>نظام النجم | تحويل XRP</title>
     <script src="https://unpkg.com/xrpl@2.2.3/dist/xrpl-latest-min.js"></script>
     <style>
-        body { background: #000; color: #d4af37; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 30px; }
-        .box { border: 2px solid #d4af37; padding: 25px; border-radius: 20px; display: inline-block; background: #111; box-shadow: 0 0 15px #d4af37; max-width: 90%; word-wrap: break-word; }
-        button { background: #d4af37; color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; border-radius: 10px; font-size: 18px; margin-top: 20px; }
-        button:hover { background: #fff; }
-        .info { margin-top: 20px; text-align: right; background: #222; padding: 10px; border-radius: 10px; border: 1px solid #444; }
-        #status { font-weight: bold; color: #00ff00; }
+        body { background: #000; color: #d4af37; font-family: sans-serif; text-align: center; padding: 20px; }
+        .box { border: 2px solid #d4af37; padding: 20px; border-radius: 20px; background: #111; max-width: 500px; margin: auto; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #d4af37; background: #222; color: #fff; }
+        button { background: #d4af37; color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; border-radius: 10px; width: 100%; }
+        .result { margin-top: 20px; padding: 10px; border: 1px dashed #d4af37; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h1>🌟 نظام النجم العالمي 🌟</h1>
-        <p>حالة الاتصال: <span id="status">جاري الاتصال بـ Ripple...</span></p>
-        <button id="genBtn" onclick="generateWallet()">إنشاء محفظة XRP وتفعيل الرصيد</button>
-        <div id="wallet-info" class="info" style="display:none;"></div>
+        <h1>🌟 نظام النجم للحوالات 🌟</h1>
+        
+        <div id="setup">
+            <p>أدخل مفتاحك السري للبدء:</p>
+            <input type="password" id="secretKey" placeholder="المفتاح السري (Seed)">
+            <button onclick="connectWallet()">تسجيل الدخول للمحفظة</button>
+        </div>
+
+        <div id="transfer-section" style="display:none;">
+            <p>رصيدك الحالي: <span id="balance">0</span> XRP</p>
+            <hr>
+            <input type="text" id="destAddr" placeholder="عنوان المستلم (r...)">
+            <input type="number" id="amount" placeholder="المبلغ">
+            <button id="sendBtn" onclick="sendXRP()">إرسال الحوالة الآن 🚀</button>
+        </div>
+        
+        <div id="log" class="result" style="display:none;"></div>
     </div>
 
     <script>
-        async function generateWallet() {
-            const btn = document.getElementById("genBtn");
-            const status = document.getElementById("status");
-            const infoDiv = document.getElementById("wallet-info");
+        let wallet;
+        const client = new xrpl.Client("wss://s.altnet.rippletest.net:51233");
+
+        async function connectWallet() {
+            const secret = document.getElementById("secretKey").value;
+            try {
+                wallet = xrpl.Wallet.fromSeed(secret);
+                await client.connect();
+                const response = await client.request({ command: "account_info", account: wallet.address, ledger_index: "validated" });
+                document.getElementById("balance").innerText = xrpl.dropsToXrp(response.result.account_data.Balance);
+                document.getElementById("setup").style.display = "none";
+                document.getElementById("transfer-section").style.display = "block";
+            } catch (e) { alert("المفتاح السري غير صحيح أو المحفظة غير مفعلة"); }
+        }
+
+        async function sendXRP() {
+            const dest = document.getElementById("destAddr").value;
+            const amount = document.getElementById("amount").value;
+            const log = document.getElementById("log");
             
-            btn.innerText = "جاري الإنشاء... انتظر";
-            btn.disabled = true;
+            log.style.display = "block";
+            log.innerText = "جاري معالجة الحوالة... ⏳";
 
             try {
-                // الربط مع الشبكة التجريبية
-                const client = new xrpl.Client("wss://s.altnet.rippletest.net:51233");
-                await client.connect();
-                status.innerText = "متصل بالشبكة ✅";
-
-                // توليد المحفظة
-                const wallet = xrpl.Wallet.generate();
+                const prepared = await client.autofill({
+                    "TransactionType": "Payment",
+                    "Account": wallet.address,
+                    "Amount": xrpl.xrpToDrops(amount),
+                    "Destination": dest
+                });
+                const signed = wallet.sign(prepared);
+                const tx = await client.submitAndWait(signed.tx_blob);
                 
-                infoDiv.style.display = "block";
-                infoDiv.innerHTML = `
-                    <p style="color:#d4af37">✅ تم إنشاء المحفظة بنجاح</p>
-                    <p><b>العنوان (Address):</b><br> <span style="color:#fff">${wallet.address}</span></p>
-                    <p><b>الرصيد:</b> <span style="color:#00ff00">0 XRP</span> (سيعمل عند الإيداع)</p>
-                    <p style="color:#ff4444; border-top:1px solid #444; padding-top:10px;"><b>المفتاح السري (Secret Seed):</b><br> ${wallet.seed}</p>
-                    <p style="font-size:12px; color:#888;">* هذا المفتاح السري هو وسيلتك الوحيدة لاستعادة الأموال، لا تشاركه مع أحد.</p>
-                `;
-                
-                await client.disconnect();
-                btn.innerText = "تم الإنشاء بنجاح ✨";
-            } catch (err) {
-                status.innerText = "خطأ في الاتصال ❌";
-                btn.disabled = false;
-                btn.innerText = "حاول مرة أخرى";
-                console.error(err);
-            }
+                if (tx.result.meta.TransactionResult === "tesSUCCESS") {
+                    log.innerHTML = `<span style="color:green">✅ تمت الحوالة بنجاح!</span><br>رقم العملية: ${tx.result.hash}`;
+                } else {
+                    log.innerHTML = `<span style="color:red">❌ فشلت العملية: ${tx.result.meta.TransactionResult}</span>`;
+                }
+            } catch (e) { log.innerText = "خطأ: " + e.message; }
         }
     </script>
 </body>
