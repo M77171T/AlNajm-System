@@ -1,1 +1,63 @@
-404: Not Found
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام النجم | XRP</title>
+    <script src="https://unpkg.com/xrpl@2.2.3/dist/xrpl-latest-min.js"></script>
+    <style>
+        body { background: #000; color: #d4af37; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 30px; }
+        .box { border: 2px solid #d4af37; padding: 25px; border-radius: 20px; display: inline-block; background: #111; box-shadow: 0 0 15px #d4af37; max-width: 90%; word-wrap: break-word; }
+        button { background: #d4af37; color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; border-radius: 10px; font-size: 18px; margin-top: 20px; }
+        button:hover { background: #fff; }
+        .info { margin-top: 20px; text-align: right; background: #222; padding: 10px; border-radius: 10px; border: 1px solid #444; }
+        #status { font-weight: bold; color: #00ff00; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🌟 نظام النجم العالمي 🌟</h1>
+        <p>حالة الاتصال: <span id="status">جاري الاتصال بـ Ripple...</span></p>
+        <button id="genBtn" onclick="generateWallet()">إنشاء محفظة XRP وتفعيل الرصيد</button>
+        <div id="wallet-info" class="info" style="display:none;"></div>
+    </div>
+
+    <script>
+        async function generateWallet() {
+            const btn = document.getElementById("genBtn");
+            const status = document.getElementById("status");
+            const infoDiv = document.getElementById("wallet-info");
+            
+            btn.innerText = "جاري الإنشاء... انتظر";
+            btn.disabled = true;
+
+            try {
+                // الربط مع الشبكة التجريبية
+                const client = new xrpl.Client("wss://s.altnet.rippletest.net:51233");
+                await client.connect();
+                status.innerText = "متصل بالشبكة ✅";
+
+                // توليد المحفظة
+                const wallet = xrpl.Wallet.generate();
+                
+                infoDiv.style.display = "block";
+                infoDiv.innerHTML = `
+                    <p style="color:#d4af37">✅ تم إنشاء المحفظة بنجاح</p>
+                    <p><b>العنوان (Address):</b><br> <span style="color:#fff">${wallet.address}</span></p>
+                    <p><b>الرصيد:</b> <span style="color:#00ff00">0 XRP</span> (سيعمل عند الإيداع)</p>
+                    <p style="color:#ff4444; border-top:1px solid #444; padding-top:10px;"><b>المفتاح السري (Secret Seed):</b><br> ${wallet.seed}</p>
+                    <p style="font-size:12px; color:#888;">* هذا المفتاح السري هو وسيلتك الوحيدة لاستعادة الأموال، لا تشاركه مع أحد.</p>
+                `;
+                
+                await client.disconnect();
+                btn.innerText = "تم الإنشاء بنجاح ✨";
+            } catch (err) {
+                status.innerText = "خطأ في الاتصال ❌";
+                btn.disabled = false;
+                btn.innerText = "حاول مرة أخرى";
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>
