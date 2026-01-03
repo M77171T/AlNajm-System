@@ -1,0 +1,159 @@
+npm install express socket.io
+
+nano chat_server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+// محاكاة دخول الوكلاء
+io.on('connection', (socket) => {
+ 
+   console.log('🟢 وكيل جديد انضم للنظام...');
+
+
+    socket.on('send_remittance', (data) => {
+        console.log(`💰 حوالة واردة من ${data.branch}: بمبلغ ${data.amount}`);
+        // إرسال تنبيه لكل الفروع
+        io.emit('notification', `إشعار: تمت حوالة جديدة في فرع ${data.branch}`);
+    });
+
+    socket.on('chat_message', (msg) => {
+        console.log('💬 رسالة من الوكيل: ' + msg);
+    });
+});
+
+server.listen(3000, () => {
+    console.log('🚀 شاشة الدردشة والعمليات تعمل الآن على المنفذ 3000');
+    console.log('انتظر رسائل الوكلاء...');
+});
+x
+nano chat_server.js
+
+rm chat_server.js
+
+
+
+cat <<EOF > chat_server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require("socket.io");
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.get('/', (req, res) => {
+    res.send(\`
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+            <title>نظام المليار</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: sans-serif; background: #eef2f3; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+                .box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+                input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+                button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; cursor: pointer; }
+                h2 { color: #1a73e8; }
+            </style>
+        </head>
+        <body>
+            <div class="box">
+                <h2>🏦 بوابة الصراف الذكي</h2>
+                <input type="text" id="b" placeholder="اسم الفرع">
+                <input type="number" id="a" placeholder="المبلغ">
+                <button onclick="send()">إرسال الحوالة الآن</button>
+                <p id="m"></p>
+            </div>
+            <script src="/socket.io/socket.io.js"></script>
+            <script>
+                const socket = io();
+                function send() {
+                    const data = { branch: document.getElementById('b').value, amount: document.getElementById('a').value };
+                    socket.emit('send_remittance', data);
+                    document.getElementById('m').innerText = "✅ تم الإرسال للمركز الرئيسي";
+                }
+            </script>
+        </body>
+        </html>
+    \`);
+});
+
+io.on('connection', (socket) => {
+    console.log('🟢 وكيل دخل للواجهة');
+    socket.on('send_remittance', (data) => {
+        console.log('💰 حوالة من: ' + data.branch + ' بمبلغ: ' + data.amount);
+    });
+});
+
+server.listen(3000, '0.0.0.0', () => {
+    console.log('🚀 السيرفر جاهز! افتح الرابط: http://localhost:3000');
+});
+EOF
+
+
+rm chat_server.js
+
+
+cat <<EOF > chat_server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require("socket.io");
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.get('/', (req, res) => {
+    res.send(\`
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+            <title>نظام المليار</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: sans-serif; background: #eef2f3; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+                .box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+                input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+                button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; cursor: pointer; }
+                h2 { color: #1a73e8; }
+            </style>
+        </head>
+        <body>
+            <div class="box">
+                <h2>🏦 بوابة الصراف الذكي</h2>
+                <input type="text" id="b" placeholder="اسم الفرع">
+                <input type="number" id="a" placeholder="المبلغ">
+                <button onclick="send()">إرسال الحوالة الآن</button>
+                <p id="m"></p>
+            </div>
+            <script src="/socket.io/socket.io.js"></script>
+            <script>
+                const socket = io();
+                function send() {
+                    const data = { branch: document.getElementById('b').value, amount: document.getElementById('a').value };
+                    socket.emit('send_remittance', data);
+                    document.getElementById('m').innerText = "✅ تم الإرسال للمركز الرئيسي";
+                }
+            </script>
+        </body>
+        </html>
+    \`);
+});
+
+io.on('connection', (socket) => {
+    console.log('🟢 وكيل دخل للواجهة');
+    socket.on('send_remittance', (data) => {
+        console.log('💰 حوالة من: ' + data.branch + ' بمبلغ: ' + data.amount);
+    });
+});
+
+server.listen(3000, '0.0.0.0', () => {
+    console.log('🚀 السيرفر جاهز! افتح الرابط: http://localhost:3000');
+});
+EOF
+node chat_server.js
+
+
